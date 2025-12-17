@@ -65,7 +65,6 @@ public class MusicPlayerController {
         musicFiles = new ArrayList<>();
         playlistView.setItems(playlist);
         
-        // Set up playlist selection listener
         playlistView.getSelectionModel().selectedItemProperty().addListener(
             (observable, oldValue, newValue) -> {
                 if (newValue != null) {
@@ -75,16 +74,13 @@ public class MusicPlayerController {
             }
         );
         
-        // Initialize volume slider
         volumeSlider.setValue(50);
         volumeLabel.setText("50%");
         
-        // Set up volume slider listener
         volumeSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
             onVolumeChanged();
         });
         
-        // Set up progress slider listeners
         progressSlider.setOnMousePressed(event -> {
             isDragging = true;
         });
@@ -101,7 +97,6 @@ public class MusicPlayerController {
             isDragging = false;
         });
         
-        // Update file count
         updateFileCount();
     }
     
@@ -212,7 +207,6 @@ public class MusicPlayerController {
                 progressSlider.setMax(100);
             });
             
-            // Update progress
             mediaPlayer.currentTimeProperty().addListener((observable, oldValue, newValue) -> {
                 if (!isDragging && newValue != null) {
                     Duration duration = currentMedia.getDuration();
@@ -224,26 +218,21 @@ public class MusicPlayerController {
                 }
             });
             
-            // Handle track end
             mediaPlayer.setOnEndOfMedia(() -> {
                 nextTrack();
             });
             
-            // Handle errors
             mediaPlayer.setOnError(() -> {
                 statusLabel.setText("Ошибка воспроизведения: " + mediaPlayer.getError().getMessage());
             });
             
-            // Update song info
             String fileName = file.getName();
             songTitleLabel.setText(fileName.substring(0, fileName.lastIndexOf('.')));
             artistLabel.setText("Неизвестный исполнитель");
             albumArtLabel.setText("🎵");
             
-            // Select in playlist
             playlistView.getSelectionModel().select(index);
             
-            // Play
             mediaPlayer.play();
             isPlaying = true;
             playPauseButton.setText("⏸");
