@@ -1,0 +1,254 @@
+/* Основные стили */
+.root {
+    -fx-background-color: #1a1a1a;
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
+}
+
+/* Header */
+.header {
+    -fx-background-color: linear-gradient(to right, #2d2d2d, #1a1a1a);
+    -fx-border-color: #333333;
+    -fx-border-width: 0 0 1 0;
+}
+
+.header-title {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+
+.header-button {
+    -fx-background-color: #4a90e2;
+    -fx-text-fill: white;
+    -fx-padding: 8 16;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+}
+
+.header-button:hover {
+    -fx-background-color: #5ba0f2;
+}
+
+.header-button:pressed {
+    -fx-background-color: #3a80d2;
+}
+
+/* Split Pane */
+.main-split {
+    -fx-background-color: #1a1a1a;
+}
+
+.split-pane-divider {
+    -fx-background-color: #333333;
+    -fx-pref-width: 2px;
+}
+
+/* Playlist Panel */
+.playlist-panel {
+    -fx-background-color: #222222;
+    -fx-padding: 15;
+    -fx-spacing: 10;
+}
+
+.section-title {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 10 0;
+}
+
+.playlist-list {
+    -fx-background-color: #1a1a1a;
+    -fx-border-color: #333333;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+}
+
+.playlist-list .list-cell {
+    -fx-background-color: #1a1a1a;
+    -fx-text-fill: #ffffff;
+    -fx-padding: 10;
+    -fx-border-color: transparent;
+}
+
+.playlist-list .list-cell:selected {
+    -fx-background-color: #4a90e2;
+    -fx-text-fill: white;
+}
+
+.playlist-list .list-cell:hover {
+    -fx-background-color: #2d2d2d;
+}
+
+.playlist-controls {
+    -fx-padding: 10 0 0 0;
+}
+
+/* Now Playing Panel */
+.now-playing-panel {
+    -fx-background-color: #1a1a1a;
+    -fx-alignment: center;
+}
+
+.album-art-container {
+    -fx-padding: 20;
+}
+
+.album-art {
+    -fx-font-size: 120px;
+    -fx-padding: 20;
+    -fx-background-color: #2d2d2d;
+    -fx-background-radius: 10;
+    -fx-min-width: 200;
+    -fx-min-height: 200;
+    -fx-alignment: center;
+}
+
+.song-title {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-padding: 15 0 5 0;
+    -fx-alignment: center;
+}
+
+.artist-name {
+    -fx-text-fill: #aaaaaa;
+    -fx-font-size: 16px;
+    -fx-padding: 0 0 20 0;
+    -fx-alignment: center;
+}
+
+/* Progress Bar */
+.time-label {
+    -fx-text-fill: #aaaaaa;
+    -fx-font-size: 12px;
+    -fx-min-width: 40;
+}
+
+.progress-slider .track {
+    -fx-background-color: #333333;
+    -fx-background-radius: 5;
+    -fx-pref-height: 6;
+}
+
+.progress-slider .thumb {
+    -fx-background-color: #4a90e2;
+    -fx-background-radius: 8;
+    -fx-pref-width: 16;
+    -fx-pref-height: 16;
+}
+
+.progress-slider .thumb:hover {
+    -fx-background-color: #5ba0f2;
+}
+
+.progress-slider .filled-track {
+    -fx-background-color: #4a90e2;
+    -fx-background-radius: 5;
+}
+
+/* Playback Controls */
+.playback-controls {
+    -fx-padding: 20 0;
+}
+
+.control-button {
+    -fx-background-color: #2d2d2d;
+    -fx-text-fill: white;
+    -fx-padding: 10 20;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+    -fx-font-size: 14px;
+}
+
+.control-button:hover {
+    -fx-background-color: #3d3d3d;
+}
+
+.control-button:pressed {
+    -fx-background-color: #1d1d1d;
+}
+
+.control-button-large {
+    -fx-background-color: #2d2d2d;
+    -fx-text-fill: white;
+    -fx-padding: 12 20;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+    -fx-font-size: 18px;
+}
+
+.control-button-large:hover {
+    -fx-background-color: #3d3d3d;
+}
+
+.play-pause-button {
+    -fx-background-color: #4a90e2;
+    -fx-text-fill: white;
+    -fx-padding: 15 25;
+    -fx-background-radius: 50;
+    -fx-cursor: hand;
+    -fx-font-size: 24px;
+    -fx-min-width: 60;
+    -fx-min-height: 60;
+}
+
+.play-pause-button:hover {
+    -fx-background-color: #5ba0f2;
+}
+
+.play-pause-button:pressed {
+    -fx-background-color: #3a80d2;
+}
+
+/* Volume Control */
+.volume-control {
+    -fx-padding: 10 0;
+}
+
+.volume-icon {
+    -fx-font-size: 16px;
+    -fx-min-width: 30;
+}
+
+.volume-slider .track {
+    -fx-background-color: #333333;
+    -fx-background-radius: 5;
+    -fx-pref-height: 6;
+}
+
+.volume-slider .thumb {
+    -fx-background-color: #4a90e2;
+    -fx-background-radius: 8;
+    -fx-pref-width: 16;
+    -fx-pref-height: 16;
+}
+
+.volume-slider .thumb:hover {
+    -fx-background-color: #5ba0f2;
+}
+
+.volume-slider .filled-track {
+    -fx-background-color: #4a90e2;
+    -fx-background-radius: 5;
+}
+
+.volume-label {
+    -fx-text-fill: #aaaaaa;
+    -fx-font-size: 12px;
+    -fx-min-width: 40;
+}
+
+/* Status Bar */
+.status-bar {
+    -fx-background-color: #222222;
+    -fx-border-color: #333333;
+    -fx-border-width: 1 0 0 0;
+}
+
+.status-text {
+    -fx-text-fill: #aaaaaa;
+    -fx-font-size: 12px;
+}
+
