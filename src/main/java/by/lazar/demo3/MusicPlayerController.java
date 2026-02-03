@@ -1,11 +1,15 @@
 package by.lazar.demo3;
 
+import javafx.animation.AnimationTimer;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
 
@@ -51,6 +55,9 @@ public class MusicPlayerController {
     @FXML
     private Slider volumeSlider;
     
+    @FXML
+    private Canvas visualizerCanvas;
+    
     private ObservableList<String> playlist;
     private List<File> musicFiles;
     private MediaPlayer mediaPlayer;
@@ -58,6 +65,9 @@ public class MusicPlayerController {
     private int currentTrackIndex = -1;
     private boolean isPlaying = false;
     private boolean isDragging = false;
+    
+    // Данные спектра для визуализатора (обновляются из AudioSpectrumListener)
+    private volatile float[] spectrumMagnitudes = new float[0];
     
     @FXML
     public void initialize() {
@@ -103,6 +113,63 @@ public class MusicPlayerController {
         
         // Update file count
         updateFileCount();
+        
+        // Фиксированный размер Canvas — без привязки к контейнеру, чтобы при Play не плыла разметка
+        if (visualizerCanvas != null) {
+            visualizerCanvas.setWidth(640);
+            visualizerCanvas.setHeight(180);
+        }
+        
+        // Запуск визуализатора спектра
+        startVisualizerTimer();
+    }
+    
+    private void startVisualizerTimer() {
+        AnimationTimer timer = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                drawVisualizer();
+            }
+        };
+        timer.start();
+    }
+    
+    private void drawVisualizer() {
+        if (visualizerCanvas == null) return;
+        GraphicsContext gc = visualizerCanvas.getGraphicsContext2D();
+        double w = visualizerCanvas.getWidth();
+        double h = visualizerCanvas.getHeight();
+        gc.clearRect(0, 0, w, h);
+        
+        float[] mags = spectrumMagnitudes;
+        if (mags.length == 0) {
+            // Когда нет звука — рисуем тихую линию
+            gc.setFill(Color.rgb(74, 144, 226, 0.3));
+            gc.fillRect(0, h * 0.8, w, 2);
+            return;
+        }
+        
+        // Меньше полосок = толще полоски (мин. ширина полоски ~14 px)
+        int bars = Math.min((int) (w / 14), mags.length);
+        double barWidth = w / bars;
+        // Диапазон dB примерно от -60 до 0, нормализуем в высоту
+        double maxDb = 0;
+        double minDb = -60;
+        
+        for (int i = 0; i < bars; i++) {
+            int idx = (i * mags.length) / bars;
+            float dB = mags[idx];
+            double t = (dB - minDb) / (maxDb - minDb);
+            t = Math.max(0, Math.min(1, t));
+            double barHeight = (h / 2) * t;
+            double x = i * barWidth + 1;
+            double y = h / 2 - barHeight / 2;
+            gc.setFill(Color.rgb(74, 144, 226, 0.5 + 0.5 * t));
+            gc.fillRect(x, y, barWidth - 1, barHeight);
+            // Зеркало внизу
+            gc.setFill(Color.rgb(74, 144, 226, 0.2 + 0.3 * t));
+            gc.fillRect(x, h / 2, barWidth - 1, barHeight);
+        }
     }
     
     @FXML
@@ -202,6 +269,14 @@ public class MusicPlayerController {
             currentMedia = new Media(file.toURI().toString());
             mediaPlayer = new MediaPlayer(currentMedia);
             
+            // Визуализация: включаем аудиоспектр и слушатель
+            mediaPlayer.setAudioSpectrumNumBands(64);
+            mediaPlayer.setAudioSpectrumInterval(0.05);
+            mediaPlayer.setAudioSpectrumThreshold(-60);
+            mediaPlayer.setAudioSpectrumListener((timestamp, duration, magnitudes, phases) -> {
+                spectrumMagnitudes = magnitudes.clone();
+            });
+            
             // Set volume
             mediaPlayer.setVolume(volumeSlider.getValue() / 100.0);
             
@@ -284,6 +359,7 @@ public class MusicPlayerController {
             progressSlider.setValue(0);
             currentTimeLabel.setText("0:00");
             totalTimeLabel.setText("0:00");
+            spectrumMagnitudes = new float[0];
         }
     }
     

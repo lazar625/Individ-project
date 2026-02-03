@@ -84,6 +84,15 @@
     -fx-padding: 10 0 0 0;
 }
 
+/* Визуализатор спектра */
+.visualizer-container {
+    -fx-background-color: #0d0d0d;
+    -fx-background-radius: 8;
+    -fx-padding: 10;
+    -fx-min-height: 180;
+    -fx-pref-height: 180;
+}
+
 /* Now Playing Panel */
 .now-playing-panel {
     -fx-background-color: #1a1a1a;

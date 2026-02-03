@@ -7,12 +7,13 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
+<?import javafx.scene.canvas.Canvas?>
 
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="by.lazar.demo3.MusicPlayerController"
             stylesheets="@music-player.css">
-    
+
     <!-- Top: Header -->
     <top>
         <HBox alignment="CENTER_LEFT" styleClass="header">
@@ -24,7 +25,7 @@
             <Button text="📁 Открыть файлы" onAction="#openFiles" styleClass="header-button"/>
         </HBox>
     </top>
-    
+
     <!-- Center: Main content area -->
     <center>
         <SplitPane dividerPositions="0.3" styleClass="main-split">
@@ -37,48 +38,53 @@
                     <Button text="➖ Удалить" onAction="#removeFromPlaylist" styleClass="control-button"/>
                 </HBox>
             </VBox>
-            
+
             <!-- Right: Now Playing -->
             <VBox styleClass="now-playing-panel" spacing="20">
                 <padding>
                     <Insets top="30" bottom="30" left="30" right="30"/>
                 </padding>
-                
+
+                <!-- Визуализатор спектра -->
+                <VBox styleClass="visualizer-container" alignment="CENTER">
+                    <Canvas fx:id="visualizerCanvas" width="640" height="180"/>
+                </VBox>
+
                 <!-- Album Art Placeholder -->
                 <VBox alignment="CENTER" styleClass="album-art-container">
                     <Label fx:id="albumArtLabel" text="🎵" styleClass="album-art"/>
                     <Label fx:id="songTitleLabel" text="Выберите трек" styleClass="song-title"/>
                     <Label fx:id="artistLabel" text="" styleClass="artist-name"/>
                 </VBox>
-                
+
                 <!-- Progress Bar -->
                 <VBox spacing="5">
                     <HBox alignment="CENTER_LEFT" spacing="10">
                         <Label fx:id="currentTimeLabel" text="0:00" styleClass="time-label"/>
-                        <Slider fx:id="progressSlider" HBox.hgrow="ALWAYS" 
+                        <Slider fx:id="progressSlider" HBox.hgrow="ALWAYS"
                                 min="0" max="100" value="0"/>
                         <Label fx:id="totalTimeLabel" text="0:00" styleClass="time-label"/>
                     </HBox>
                 </VBox>
-                
+
                 <!-- Playback Controls -->
                 <HBox alignment="CENTER" spacing="15" styleClass="playback-controls">
                     <Button text="⏮" onAction="#previousTrack" styleClass="control-button-large"/>
                     <Button fx:id="playPauseButton" text="▶" onAction="#playPause" styleClass="play-pause-button"/>
                     <Button text="⏭" onAction="#nextTrack" styleClass="control-button-large"/>
                 </HBox>
-                
+
                 <!-- Volume Control -->
                 <HBox alignment="CENTER" spacing="10" styleClass="volume-control">
                     <Label text="🔊" styleClass="volume-icon"/>
-                    <Slider fx:id="volumeSlider" HBox.hgrow="ALWAYS" 
+                    <Slider fx:id="volumeSlider" HBox.hgrow="ALWAYS"
                             min="0" max="100" value="50"/>
                     <Label fx:id="volumeLabel" text="50%" styleClass="volume-label"/>
                 </HBox>
             </VBox>
         </SplitPane>
     </center>
-    
+
     <!-- Bottom: Status Bar -->
     <bottom>
         <HBox alignment="CENTER_LEFT" styleClass="status-bar">
