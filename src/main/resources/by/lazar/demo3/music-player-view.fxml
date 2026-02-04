@@ -22,6 +22,7 @@
             <Label text="🎵 Музыкальный Плеер" styleClass="header-title"/>
             <Region HBox.hgrow="ALWAYS"/>
             <Button text="📁 Открыть файлы" onAction="#openFiles" styleClass="header-button"/>
+            <Button text="✨ Визуализация" onAction="#openVisualizerWindow" styleClass="header-button"/>
         </HBox>
     </top>
     

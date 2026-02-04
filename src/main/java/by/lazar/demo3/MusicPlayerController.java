@@ -4,13 +4,16 @@ import javafx.animation.AnimationTimer;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
+import javafx.scene.layout.StackPane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.io.File;
@@ -68,6 +71,11 @@ public class MusicPlayerController {
     
     // Данные спектра для визуализатора (обновляются из AudioSpectrumListener)
     private volatile float[] spectrumMagnitudes = new float[0];
+
+    // Отдельное окно большой визуализации
+    private Stage visualizerStage;
+    private Canvas bigVisualizerCanvas;
+    private AnimationTimer bigVisualizerTimer;
     
     @FXML
     public void initialize() {
@@ -131,9 +139,15 @@ public class MusicPlayerController {
     
     private void drawVisualizer() {
         if (visualizerCanvas == null) return;
-        GraphicsContext gc = visualizerCanvas.getGraphicsContext2D();
-        double w = visualizerCanvas.getWidth();
-        double h = visualizerCanvas.getHeight();
+        drawVisualizerOnCanvas(visualizerCanvas);
+    }
+
+    private void drawVisualizerOnCanvas(Canvas canvas) {
+        if (canvas == null) return;
+
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        double w = canvas.getWidth();
+        double h = canvas.getHeight();
         gc.clearRect(0, 0, w, h);
         
         float[] mags = spectrumMagnitudes;
@@ -187,6 +201,42 @@ public class MusicPlayerController {
             updateFileCount();
             statusLabel.setText("Загружено " + selectedFiles.size() + " файл(ов)");
         }
+    }
+    
+    @FXML
+    protected void openVisualizerWindow() {
+        // Если окно уже открыто — просто поднимаем его
+        if (visualizerStage != null && visualizerStage.isShowing()) {
+            visualizerStage.toFront();
+            return;
+        }
+
+        bigVisualizerCanvas = new Canvas(800, 400);
+
+        StackPane root = new StackPane(bigVisualizerCanvas);
+        Scene scene = new Scene(root, 800, 400);
+
+        visualizerStage = new Stage();
+        visualizerStage.setTitle("Визуализация");
+        visualizerStage.setScene(scene);
+        visualizerStage.setOnCloseRequest(e -> {
+            if (bigVisualizerTimer != null) {
+                bigVisualizerTimer.stop();
+            }
+            visualizerStage = null;
+            bigVisualizerCanvas = null;
+            bigVisualizerTimer = null;
+        });
+
+        bigVisualizerTimer = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                drawVisualizerOnCanvas(bigVisualizerCanvas);
+            }
+        };
+        bigVisualizerTimer.start();
+
+        visualizerStage.show();
     }
     
     @FXML
