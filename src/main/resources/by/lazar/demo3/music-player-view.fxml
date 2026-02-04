@@ -7,6 +7,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
+<?import javafx.scene.canvas.Canvas?>
 
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
@@ -22,7 +23,6 @@
             <Label text="🎵 Музыкальный Плеер" styleClass="header-title"/>
             <Region HBox.hgrow="ALWAYS"/>
             <Button text="📁 Открыть файлы" onAction="#openFiles" styleClass="header-button"/>
-            <Button text="✨ Визуализация" onAction="#openVisualizerWindow" styleClass="header-button"/>
         </HBox>
     </top>
     
@@ -44,6 +44,11 @@
                 <padding>
                     <Insets top="30" bottom="30" left="30" right="30"/>
                 </padding>
+
+                <!-- Визуализатор спектра -->
+                <VBox styleClass="visualizer-container" alignment="CENTER">
+                    <Canvas fx:id="visualizerCanvas" width="640" height="180"/>
+                </VBox>
                 
                 <!-- Album Art Placeholder -->
                 <VBox alignment="CENTER" styleClass="album-art-container">

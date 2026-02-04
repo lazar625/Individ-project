@@ -4,16 +4,13 @@ import javafx.animation.AnimationTimer;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
-import javafx.scene.layout.StackPane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.io.File;
@@ -71,11 +68,7 @@ public class MusicPlayerController {
     
     // Данные спектра для визуализатора (обновляются из AudioSpectrumListener)
     private volatile float[] spectrumMagnitudes = new float[0];
-
-    // Отдельное окно большой визуализации
-    private Stage visualizerStage;
-    private Canvas bigVisualizerCanvas;
-    private AnimationTimer bigVisualizerTimer;
+    private float[] smoothedMagnitudes = new float[0];
     
     @FXML
     public void initialize() {
@@ -148,36 +141,82 @@ public class MusicPlayerController {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         double w = canvas.getWidth();
         double h = canvas.getHeight();
-        gc.clearRect(0, 0, w, h);
-        
+
+        // Фон (чуть «живее», чем просто clearRect)
+        gc.setFill(Color.rgb(5, 5, 8, 1.0));
+        gc.fillRect(0, 0, w, h);
+
         float[] mags = spectrumMagnitudes;
-        if (mags.length == 0) {
-            // Когда нет звука — рисуем тихую линию
-            gc.setFill(Color.rgb(74, 144, 226, 0.3));
-            gc.fillRect(0, h * 0.8, w, 2);
-            return;
-        }
-        
-        // Меньше полосок = толще полоски (мин. ширина полоски ~14 px)
-        int bars = Math.min((int) (w / 14), mags.length);
+
+        // Кол-во полос: меньше = толще/крупнее
+        int barsTarget = Math.max(24, (int) (w / 18)); // ~18 px на полосу
+        int bars = mags.length == 0 ? barsTarget : Math.min(barsTarget, mags.length);
+        if (bars <= 0) return;
+
         double barWidth = w / bars;
-        // Диапазон dB примерно от -60 до 0, нормализуем в высоту
+        double gap = Math.max(2, barWidth * 0.15);
+        double innerWidth = Math.max(1, barWidth - gap);
+
+        // Подготовка сглаживания
+        if (mags.length > 0 && smoothedMagnitudes.length != mags.length) {
+            smoothedMagnitudes = new float[mags.length];
+        }
+
+        // Диапазон dB примерно от -60 до 0, усилим визуально амплитуду
         double maxDb = 0;
         double minDb = -60;
-        
+        double ampBoost = 1.75; // больше = «амплитуднее»
+        double gamma = 0.55;    // <1 усиливает средние уровни
+
+        double time = System.nanoTime() / 1_000_000_000.0;
+
+        // Базовая линия
+        gc.setStroke(Color.rgb(255, 255, 255, 0.06));
+        gc.strokeLine(0, h - 1, w, h - 1);
+
         for (int i = 0; i < bars; i++) {
-            int idx = (i * mags.length) / bars;
-            float dB = mags[idx];
-            double t = (dB - minDb) / (maxDb - minDb);
-            t = Math.max(0, Math.min(1, t));
-            double barHeight = (h / 2) * t;
-            double x = i * barWidth + 1;
-            double y = h / 2 - barHeight / 2;
-            gc.setFill(Color.rgb(74, 144, 226, 0.5 + 0.5 * t));
-            gc.fillRect(x, y, barWidth - 1, barHeight);
-            // Зеркало внизу
-            gc.setFill(Color.rgb(74, 144, 226, 0.2 + 0.3 * t));
-            gc.fillRect(x, h / 2, barWidth - 1, barHeight);
+            double x = i * barWidth + gap / 2.0;
+
+            double t;
+            if (mags.length == 0) {
+                // idle-анимация: когда музыки нет — «дышащие» волны
+                double wave = (Math.sin(time * 2.2 + i * 0.35) + 1) * 0.5;
+                double wave2 = (Math.sin(time * 1.2 + i * 0.18 + 1.3) + 1) * 0.5;
+                t = Math.pow(0.15 + 0.55 * (0.6 * wave + 0.4 * wave2), 1.35) * 0.45;
+            } else {
+                int idx = (i * mags.length) / bars;
+                float raw = mags[idx];
+                // экспоненциальное сглаживание, чтобы картинка была «плавнее»
+                float prev = smoothedMagnitudes[idx];
+                float smooth = (float) (prev * 0.78 + raw * 0.22);
+                smoothedMagnitudes[idx] = smooth;
+
+                double dB = smooth;
+                t = (dB - minDb) / (maxDb - minDb);
+                t = Math.max(0, Math.min(1, t));
+                t = Math.pow(t, gamma) * ampBoost;
+                t = Math.max(0, Math.min(1, t));
+            }
+
+            double barHeight = Math.max(2, (h * 0.95) * t);
+            double y = h - barHeight;
+
+            // Цвет по частоте (радуга)
+            double hue = (i * 300.0 / Math.max(1, bars - 1)) + 20; // 20..320
+            Color main = Color.hsb(hue, 0.95, 0.95, 0.85);
+            Color glow = Color.hsb(hue, 0.95, 1.0, 0.18);
+
+            // «Glow» слой (чуть шире и полупрозрачнее)
+            gc.setFill(glow);
+            gc.fillRoundRect(x - 2, y - 2, innerWidth + 4, barHeight + 4, 10, 10);
+
+            // Основная полоса
+            gc.setFill(main);
+            gc.fillRoundRect(x, y, innerWidth, barHeight, 8, 8);
+
+            // Блик сверху
+            gc.setFill(Color.rgb(255, 255, 255, 0.10 + 0.18 * t));
+            gc.fillRoundRect(x, y, innerWidth, Math.min(10, barHeight * 0.18), 8, 8);
         }
     }
     
@@ -201,42 +240,6 @@ public class MusicPlayerController {
             updateFileCount();
             statusLabel.setText("Загружено " + selectedFiles.size() + " файл(ов)");
         }
-    }
-    
-    @FXML
-    protected void openVisualizerWindow() {
-        // Если окно уже открыто — просто поднимаем его
-        if (visualizerStage != null && visualizerStage.isShowing()) {
-            visualizerStage.toFront();
-            return;
-        }
-
-        bigVisualizerCanvas = new Canvas(800, 400);
-
-        StackPane root = new StackPane(bigVisualizerCanvas);
-        Scene scene = new Scene(root, 800, 400);
-
-        visualizerStage = new Stage();
-        visualizerStage.setTitle("Визуализация");
-        visualizerStage.setScene(scene);
-        visualizerStage.setOnCloseRequest(e -> {
-            if (bigVisualizerTimer != null) {
-                bigVisualizerTimer.stop();
-            }
-            visualizerStage = null;
-            bigVisualizerCanvas = null;
-            bigVisualizerTimer = null;
-        });
-
-        bigVisualizerTimer = new AnimationTimer() {
-            @Override
-            public void handle(long now) {
-                drawVisualizerOnCanvas(bigVisualizerCanvas);
-            }
-        };
-        bigVisualizerTimer.start();
-
-        visualizerStage.show();
     }
     
     @FXML
